@@ -1,37 +1,10 @@
-import { createServer, IncomingMessage, Server } from "http";
+import { createServer, IncomingMessage, Server, ServerResponse } from "http";
+import { routeHandler } from "./routes/routes";
 
-const server : Server = createServer((req : IncomingMessage, res)=>{
+
+const server : Server = createServer((req : IncomingMessage, res : ServerResponse)=>{
     
-    // console.log(req?.url);
-    // console.log(req?.method); GET, POST, PATCH, DELETE
-
-    const url = req?.url;
-    const method = req?.method;
-
-    if(url === '/' && method === 'GET'){
-       res.writeHead( 200,{
-        "content-type" : "application/json"
-       })
-
-       res.end(JSON.stringify({
-        message : 'This is the root route'
-       }));
-    }else if(url?.startsWith('/products')){
-        
-        res.writeHead(200, {
-            'content-type' : 'application/json'
-        })
-
-        res.end(JSON.stringify({message : 'This is the product route'}))
-    } else{
-          res.writeHead( 404,{
-        "content-type" : "application/json"
-       })
-
-       res.end(JSON.stringify({
-        message : 'Page not found!'
-       }));
-    }
+  routeHandler(req, res);
 
 })
 
