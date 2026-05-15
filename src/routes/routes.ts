@@ -17,7 +17,7 @@ export const routeHandler = (req : IncomingMessage, res : ServerResponse) =>{
        res.end(JSON.stringify({
         message : 'This is the root route'
        }));
-    }else if(url?.startsWith('/products') && method === 'GET'){
+    }else if(url?.startsWith('/products')){
         
         productController(req, res);
        
