@@ -2,10 +2,12 @@ import type { IncomingMessage, ServerResponse } from "http";
 import { readProduct, writeProduct } from "../service/product.service";
 import type { Products } from "../types/product.types";
 import { parseBody } from "../utility/uitility";
+import { sendResponse } from "../utility/sendResponse";
 
 export const productController = async(req : IncomingMessage, res : ServerResponse) =>{
 
-    //  /products ---> /products/1234
+   try{
+     //  /products ---> /products/1234
     const url = req?.url ;
     const method = req?.method ;
 
@@ -17,31 +19,16 @@ export const productController = async(req : IncomingMessage, res : ServerRespon
         // getting all the product from the database
 
         const products = readProduct();  
-        // [{}, {}, {}]
-        
-        res.writeHead(200, {
-            'content-type' : 'application/json'
-        })
-
-        res.end(JSON.stringify({
-            message : 'This is the product route', 
-            data : products
-        }))
+  
+        sendResponse(res, 200, true, 'This is the product Information', products)
     } else if(id !== null && method === 'GET'){
         //Getting a single product from a databse
 
         const products = readProduct();
         const product = products.find((p : Products) => p.id === id)
 
-        res.writeHead(200, {
-            'content-type' : 'application/json'
-        })
-
-        res.end(JSON.stringify({
-            message : 'Here we will be finding a particular product',
-            data : product,
+        sendResponse(res, 200, true, 'Success Finding a particular information', product)
         
-        }))
     }else if(method === 'POST' && url === '/products'){
         //? posting a product information
         const body = await parseBody(req)
@@ -63,7 +50,7 @@ export const productController = async(req : IncomingMessage, res : ServerRespon
             message : 'We have successfully posted a data',
             data : newProduct
         }))
-    }else if((method === 'PUT' || 'PATCH') &&  id !== null){
+    }else if((method === 'PUT' || method === 'PATCH') &&  id !== null){
 
         //? modifying a product information
 
@@ -96,5 +83,39 @@ export const productController = async(req : IncomingMessage, res : ServerRespon
             data : products[index]
         }))
         }
+    }else if(method === 'DELETE' && id !== null){
+        const products = readProduct();;
+
+        const index = products.findIndex((p : Products)=> p.id === id)
+
+        res.writeHead(200, {
+            "content-type" : 'application/json'
+        })
+
+        if(index === -1){
+            res.end(JSON.stringify({
+                message : 'The Product is not found!'
+            }))
+        }else{
+            const deletedProductInformation = products[index];
+            products.splice(index, 1);
+            writeProduct(products);
+
+             res.end(JSON.stringify({
+                message : 'The Product is deleted successfully!',
+                data : deletedProductInformation
+            }))
+        }
+    }
+   }catch (error) {
+
+        res.writeHead(500, {
+            'content-type': 'application/json'
+        });
+
+        res.end(JSON.stringify({
+            message: 'Internal Server Error',
+            error: String(error)
+        }));
     }
 }
