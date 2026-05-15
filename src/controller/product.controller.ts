@@ -63,5 +63,38 @@ export const productController = async(req : IncomingMessage, res : ServerRespon
             message : 'We have successfully posted a data',
             data : newProduct
         }))
+    }else if((method === 'PUT' || 'PATCH') &&  id !== null){
+
+        //? modifying a product information
+
+        const body = await parseBody(req);
+        const products = readProduct();
+
+        // getting the index of the product
+        const index = products.findIndex((p : Products)=> p.id === id)
+        // console.log(products[index]);
+
+         res.writeHead(200, {
+            'content-type' : 'application/json'  
+        })
+
+        if(index === -1){
+            res.end(JSON.stringify({
+                message : 'Product not found'
+            }));
+        }else{
+            //updating the product information
+            products[index] = {
+                id : products[index].id,
+                ...body
+            }
+            //updating the json database
+            writeProduct(products);
+
+             res.end(JSON.stringify({
+            message : 'The operation is successfull, product updated successfully!',
+            data : products[index]
+        }))
+        }
     }
 }
